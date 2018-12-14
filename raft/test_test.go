@@ -153,6 +153,7 @@ func TestFailNoAgree(t *testing.T) {
 
 	// 3 of 5 followers disconnect
 	leader := cfg.checkOneLeader()
+	DPrintf("#%d,%d,%d disconnected.", (leader+1)%servers, (leader+2)%servers, (leader+3)%servers)
 	cfg.disconnect((leader + 1) % servers)
 	cfg.disconnect((leader + 2) % servers)
 	cfg.disconnect((leader + 3) % servers)
@@ -173,6 +174,7 @@ func TestFailNoAgree(t *testing.T) {
 	}
 
 	// repair failures
+	DPrintf("#%d,%d,%d connected.", (leader+1)%servers, (leader+2)%servers, (leader+3)%servers)
 	cfg.connect((leader + 1) % servers)
 	cfg.connect((leader + 2) % servers)
 	cfg.connect((leader + 3) % servers)
@@ -344,6 +346,7 @@ func TestBackup(t *testing.T) {
 
 	// put leader and one follower in a partition
 	leader1 := cfg.checkOneLeader()
+	DPrintf("#%d,%d,%d disconnected.", (leader1+2)%servers, (leader1+3)%servers, (leader1+4)%servers)
 	cfg.disconnect((leader1 + 2) % servers)
 	cfg.disconnect((leader1 + 3) % servers)
 	cfg.disconnect((leader1 + 4) % servers)
@@ -354,11 +357,12 @@ func TestBackup(t *testing.T) {
 	}
 
 	time.Sleep(RaftElectionTimeout / 2)
-
+	DPrintf("Whoops! All servers disconnected.")
 	cfg.disconnect((leader1 + 0) % servers)
 	cfg.disconnect((leader1 + 1) % servers)
 
 	// allow other partition to recover
+	DPrintf("#%d,%d,%d connected.", (leader1+2)%servers, (leader1+3)%servers, (leader1+4)%servers)
 	cfg.connect((leader1 + 2) % servers)
 	cfg.connect((leader1 + 3) % servers)
 	cfg.connect((leader1 + 4) % servers)
@@ -374,6 +378,7 @@ func TestBackup(t *testing.T) {
 	if leader2 == other {
 		other = (leader2 + 1) % servers
 	}
+	DPrintf("#%d connected.", other)
 	cfg.disconnect(other)
 
 	// lots more commands that won't commit
@@ -387,6 +392,7 @@ func TestBackup(t *testing.T) {
 	for i := 0; i < servers; i++ {
 		cfg.disconnect(i)
 	}
+	DPrintf("#%d,%d,%d connected.", (leader1+0)%servers, (leader1+1)%servers, other)
 	cfg.connect((leader1 + 0) % servers)
 	cfg.connect((leader1 + 1) % servers)
 	cfg.connect(other)
